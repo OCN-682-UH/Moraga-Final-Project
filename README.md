@@ -12,3 +12,21 @@ All data is complied into one csv file named N_lituratus_forage.csv and be found
 
 Here is a table desceribing the data collected and used for my outputs within my document:
 
+|    Data    |       Definition  |
+|:-----------|:------------------------:|
+| Fish_ID      | An assigned ID given to each individual fish       |
+| Cohort      | An assigned number to group fish caught on the same day |
+| Treatment   | The assigned treatment level of sediment used across trails, measured in mg/L |
+| Experiment Type | The type of experimental trial each fish was put through |
+| Total_length  | Total length of the fish from mouth to tail end, measured in cm |
+| Standard length| Standarized length of the fish from mouth to caudal fin beggingin, measued in cm |
+| Height      | Height of the fish measured from front base of dorsal fin to pelvic fin, measured in cm |
+| Weight      | Total mass of the fish, measured in g |
+| DB_Bites    | Number of bites taken from *Dictyosphaeria verslusii* sourced from runoff areas |
+| CB_Bites    | Number of bites taken from *Dictyosphaeria verslusii* sourced far from runoff areas |
+| DE_Bites    | Number of bites taken from *Euchema sp.* sourced from runoff areas |
+| CE_Bites    | Number of bites taken from *Euchema sp.* sourced far from runofff areas|
+| DB_Mass     | Mass consumed from *Dictyosphaeria verslusii* sourced from runoff areas |
+| CB_Mass     | Mass consumed from *Dictyosphaeria verslusii* sourced far from runoff areas |
+| DE_Mass     | Mass consumed from *Euchema sp.* sourced from runoff areas |
+| CE_Mass     | Mass consumed from  *Euchema sp.* sourced far from runofff areas |
