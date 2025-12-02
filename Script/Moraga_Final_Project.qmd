@@ -1,0 +1,263 @@
+---
+title: "Moraga Final Project"
+author: "Jacquin Moraga"
+format:
+  html:
+    toc: true
+    code-fold: true
+    css: fancy.css
+---
+
+# Introduction
+
+Large, unnatural quantities of terrigenous sediment alter fish behavior in nearshore reefs but there is a lack of understanding what concentrations alter behavior for different fish and functional groups.
+
+For part of my research, I've looked at foraging behavior of *Naso lituratus* under different sediment concentrations and created the dataset **N_lituratus_forage.csv**
+
+![Naso lituratus](images/NasoLituratDavidBurdick.jpg)
+
+This dataset contains foraging behavior indicated by number of bites, sediment conditions, mass of algae consumed, and fish sizes.
+
+# Libraries
+
+For this project I utilized packages that I have grown very familiar with throughout the semester and practiced a lot with previous outputs in this class.
+
+```{r}
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(here)
+library(ggpubr)
+library(PNWColors)
+library(kableExtra)
+library(dplyr)
+library(patchwork)
+
+```
+
+# Data
+
+I have created this dataset through the data collected running these foraging behavior experiments. Here I created three separate dataframes to be used for three different outputs.
+
+```{r}
+#| warning: false
+#| message: false
+#| label: fig-data
+
+Nlit <-read_csv(here("Data","N_lituratus_forage.csv")) #the entire unedited dataset
+
+Total_Bites <- Nlit %>% #combining all bites per trial and excluding failed trials where 0 bites were taken, used for the first two plots
+  mutate(Bites = DB_Bites + CB_Bites + DE_Bites + CE_Bites) %>%
+  filter(Bites > 0)
+
+Algae_Pref <- Nlit %>% #making into the long format 
+  pivot_longer(
+    cols = c(DB_Bites, CB_Bites, DE_Bites, CE_Bites),
+    names_to = "Algae",
+    values_to = "algae_type") %>%
+  filter(algae_type > 0, algae_type <= 300) #to filter out outliers and when bites weren't taken
+  
+
+Mass_eaten <- Nlit %>%
+  mutate(
+    DB_Mass = as.numeric(DB_Mass),
+    CB_Mass = as.numeric(CB_Mass),
+    DE_Mass = as.numeric(DE_Mass),
+    CE_Mass = as.numeric(CE_Mass),
+    Total_Mass = DB_Mass + CB_Mass + DE_Mass + CE_Mass) %>%
+  filter(Total_Mass >=0)
+
+
+
+
+
+kable(head(Nlit,10), caption = "N_lituratus_foraging") %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "left"
+  )
+
+```
+
+@fig-data showing the first 10 rows of the data contained in this file.
+
+# Comparisons within same treatment
+
+The first way I wanted to look at this data was to compare the bites of all the fish and compare them across experiment types and treatment level to look for any differences. Comparing foraging rates in sediment conditions was the main purpose of the study so I was eager to look at this first. I thought that the Both experiment type would have the lowest feeding rates across all treatments and treatment level 12 would also have the lowest rates but both of those were incorrect.
+
+```{r}
+#| warning: false
+#| message: false
+#| label: fig-1
+
+ggboxplot(
+  Total_Bites,
+  x = "Experiment_Type",
+  y = "Bites",
+  fill = "Experiment_Type",
+  palette = pnw_palette("Bay"),
+   facet.by = "Treatment_Level") +
+  stat_compare_means(method = "t.test", label = "p.signif") +
+  labs(
+    title = "N. lituratus Bites by Treatment Level",
+    x = "Experiment Type",
+    y = "Total Bites",
+    fill = "Experiment Type"
+  ) +
+  theme_minimal()+
+  theme(
+    axis.title.x = element_text (margin = margin(r=30)),
+    axis.title.y = element_text (margin = margin(r=15)),
+    strip.text = element_text(face = "bold", size = 12)
+  )
+
+```
+
+Here in @fig-1 there is no significance between the number of bites among experiment types in each treatment level. Looking at the bars there are some pretty large ranges among the total number of bites.
+
+# Comparisons between treatments
+
+Next I wanted to compare differences of bite rates between different treatments for each trail type but wasn't expecting anything significant based on the last plot.
+
+```{r}
+#| warning: false
+#| message: false
+#| label: fig-2
+
+ggboxplot(
+  Total_Bites,
+  x = "Treatment_Level",   # now treatment is on the x-axis
+  y = "Bites",
+  fill = "Treatment_Level", # color by treatment
+  palette = pnw_palette("Bay"),
+  facet.by = "Experiment_Type"   # facet by trial type
+) +
+  stat_compare_means(
+    method = "t.test",
+    label = "p.signif"
+  ) +
+  labs(
+    title = "N. lituratus Bites by Treatment Level",
+    x = "Treatment Level",
+    y = "Total Bites"
+  ) +
+  theme_minimal()
+
+```
+
+In @fig-2 there is also no significance between the different treatments for each experiment type.
+
+It was a surprise to see no significance between treatment types as I would have thought that changes in the quantity of sediment would've had some effect. Now to look at if there were differences between the algae options each fish was given.
+
+# Preference in Algae
+
+The algae that was given to the fish in the foraging experiments consisted of two species, *Dictyosphaeria verslusii*/ Bubble algae and *Eucheuma sp.* that were sourced from either near runoff sources or far from runoff. The runoff adjacent algae was called "Dirty" and removed from runoff was called "Clean". 
+```{r}
+#| warning: false
+#| message: false
+#| label: fig-3
+
+algae_comparisons <- list(c("DB_Bites","CB_Bites"), c("DB_Bites","DE_Bites"), c("DB_Bites","CE_Bites"))
+
+ggviolin(
+  Algae_Pref,
+  x = "Algae",
+  y = "algae_type",
+  fill = "Algae",
+  palette = pnw_palette("Bay"),
+  add = "boxplot") +
+  stat_compare_means(comparisons = algae_comparisons, method = "t.test", label = "p.signif", label.y = 350) +
+  labs(
+    title = "Algae Preference of N. lituratus",
+    x = "Algae Type",
+    y = "Preference (Bites)"
+  ) +
+  theme_minimal()
+
+
+```
+
+Looking at @fig-3 you can see that the dirty *Dictyosphaeria verslusi* was favored significantly more than both *Eucheuma* but not more than clean bubble algae.
+
+
+# Size to number of bites and size to total mass eaten
+
+Finally I wanted to make sure that the sizes of the fish weren't the determining factor so I plotting the fish size of all individuals against the total number of bites as well as the total mass eaten.
+```{r}
+#| warning: false
+#| message: false
+#| label: fig-mass
+
+p1 <- ggplot(Total_Bites, aes(x = Total_Length, y = Bites)) +
+  geom_point(aes(color = as.character(Treatment_Level)), size = 3, alpha = 0.7) + #laying down a second point plot to get the colors I want
+  geom_smooth(method = "lm", se = TRUE, color = "black", fill = "lightblue") +  # solid line
+  stat_regline_equation(
+    aes(label = ..eq.label..),
+    label.x = 10,   # fixed placement on x-axis
+    label.y = 570# fixed placement on y-axis
+  ) +
+  stat_cor(
+    aes(label = ..rr.label..),
+    label.x = 14,
+    label.y = 570
+  ) +
+  labs(
+    title = "Fish Size vs Total Bites",
+    subtitle = "Solid regression line with equation and R²",
+    x = "Fish Total Length (cm)",
+    y = "Algae Mass Eaten (g)",
+    color = "Treatment Level"
+  ) +
+  scale_color_manual(
+    values = c("6" = pnw_palette("Bay")[1],
+               "9" = pnw_palette("Bay")[5],
+               "12" = pnw_palette("Bay")[3])) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12, color = "gray"),
+    axis.title = element_text(face = "bold"),
+    legend.position = "right",
+    panel.grid.minor = element_blank()
+  )
+
+p2 <- ggplot(Mass_eaten, aes(x = Total_Length, y = Total_Mass)) +
+  geom_point(aes(color = as.character(Treatment_Level)), size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = TRUE, color = "black", fill = "lightblue") +  # solid line
+  stat_regline_equation(
+    aes(label = ..eq.label..),
+    label.x = 10,   # fixed placement on x-axis
+    label.y = 4 # fixed placement on y-axis
+  ) +
+  stat_cor(
+    aes(label = ..rr.label..),
+    label.x = 14,
+    label.y = 4
+  ) +
+  labs(
+    title = "Fish Size vs Mass Eaten",
+    subtitle = "Solid regression line with equation and R²",
+    x = "Fish Total Length (cm)",
+    y = "Algae Mass Eaten (g)",
+    color = "Treatment Level"
+  ) +
+  scale_color_manual(
+    values = c("6" = pnw_palette("Bay")[1],
+               "9" = pnw_palette("Bay")[5],
+               "12" = pnw_palette("Bay")[3])) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12, color = "gray"),
+    axis.title = element_text(face = "bold"),
+    legend.position = "right",
+    panel.grid.minor = element_blank()
+  )
+
+p1/p2 +
+  plot_layout(guides = 'collect')
+```
+
+Having a very small R2 value in @fig-mass is good for my experimental set up as the number of bites and the mass of algae eaten is not dependent on the size of the fish. There also is good distribution of sizes across the different treatments. 
