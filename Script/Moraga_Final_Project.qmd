@@ -256,7 +256,7 @@ p2 <- ggplot(Mass_eaten, aes(x = Total_Length, y = Total_Mass)) + #this plot is 
     panel.grid.minor = element_blank()
   )
 
-p1/p2 + #putting the two plots together
+p1/p2 + #putting the two plots together 
   plot_layout(guides = 'collect') #having just one legend
 ```
 
