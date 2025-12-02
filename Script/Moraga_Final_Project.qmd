@@ -102,7 +102,7 @@ ggboxplot(
   stat_compare_means(method = "t.test", 
                      label = "p.signif") + #running a t.test within each treatment level with the significance label up top
   labs( #adding titles 
-    title = "N. lituratus Bites by Treatment Level",
+    title = "N. lituratus Bites by Experiment Type",
     x = "Experiment Type",
     y = "Total Bites",
     fill = "Experiment Type"
@@ -113,6 +113,8 @@ ggboxplot(
     axis.title.y = element_text (margin = margin(r=15)),
     strip.text = element_text(face = "bold", size = 12)
   )
+
+ggsave(here("Output", "Bites_Experiment_Type.png")) #save to my output
 
 ```
 
@@ -145,6 +147,7 @@ ggboxplot(
   ) +
   theme_minimal() #minimal theme
 
+ggsave(here("Output", "Bites_Treatment_Level.png")) #save to my output
 ```
 
 In @fig-2 there is also no significance between the different treatments for each experiment type.
@@ -176,6 +179,7 @@ ggviolin( #choosing a violin plot for this data
   ) +
   theme_minimal() #minimal theme to match others
 
+ggsave(here("Output", "Algae_Preference.png")) #save to output
 
 ```
 
@@ -258,6 +262,8 @@ p2 <- ggplot(Mass_eaten, aes(x = Total_Length, y = Total_Mass)) + #this plot is 
 
 p1/p2 + #putting the two plots together 
   plot_layout(guides = 'collect') #having just one legend
+
+ggsave(here("Output", "Fish_size.png")) #save to output
 ```
 
 Having a very small R2 value in @fig-mass is good for my experimental set up as the number of bites and the mass of algae eaten is not dependent on the size of the fish. There also is good distribution of sizes across the different treatments. 
