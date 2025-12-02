@@ -48,35 +48,35 @@ I have created this dataset through the data collected running these foraging be
 Nlit <-read_csv(here("Data","N_lituratus_forage.csv")) #the entire unedited dataset
 
 Total_Bites <- Nlit %>% #combining all bites per trial and excluding failed trials where 0 bites were taken, used for the first two plots
-  mutate(Bites = DB_Bites + CB_Bites + DE_Bites + CE_Bites) %>%
-  filter(Bites > 0)
+  mutate(Bites = DB_Bites + CB_Bites + DE_Bites + CE_Bites) %>% #adding all of the bites of different algae sources for total number of bites per individual
+  filter(Bites > 0) #getting rid of those that took 0 bites total
 
 Algae_Pref <- Nlit %>% #making into the long format 
   pivot_longer(
-    cols = c(DB_Bites, CB_Bites, DE_Bites, CE_Bites),
-    names_to = "Algae",
-    values_to = "algae_type") %>%
+    cols = c(DB_Bites, CB_Bites, DE_Bites, CE_Bites), #using the columns in this list
+    names_to = "Algae", #new column with the name
+    values_to = "algae_type") %>% #new column with the values
   filter(algae_type > 0, algae_type <= 300) #to filter out outliers and when bites weren't taken
   
 
 Mass_eaten <- Nlit %>%
-  mutate(
+  mutate( #some of these values were negatives which were counted as strings and wouldn't work so I changed them all to numbers and got rid of the negatives
     DB_Mass = as.numeric(DB_Mass),
     CB_Mass = as.numeric(CB_Mass),
     DE_Mass = as.numeric(DE_Mass),
     CE_Mass = as.numeric(CE_Mass),
-    Total_Mass = DB_Mass + CB_Mass + DE_Mass + CE_Mass) %>%
-  filter(Total_Mass >=0)
+    Total_Mass = DB_Mass + CB_Mass + DE_Mass + CE_Mass) %>% #added the masses together 
+  filter(Total_Mass >=0) #made sure non were equal to 0 since those were experiments where the fish didn't eat and technically a failed run
 
 
 
 
 
-kable(head(Nlit,10), caption = "N_lituratus_foraging") %>%
+kable(head(Nlit,10), caption = "N_lituratus_foraging") %>% #creating just the head and the first 10 rows
   kable_styling(
-    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-    full_width = FALSE,
-    position = "left"
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"), #styling options to make my table look more fancy
+    full_width = FALSE, #table isn't stretched across the page
+    position = "left" #puts the table on the left side of the page
   )
 
 ```
@@ -93,21 +93,22 @@ The first way I wanted to look at this data was to compare the bites of all the 
 #| label: fig-1
 
 ggboxplot(
-  Total_Bites,
-  x = "Experiment_Type",
+  Total_Bites, #the dataset
+  x = "Experiment_Type", #setting the axes
   y = "Bites",
   fill = "Experiment_Type",
-  palette = pnw_palette("Bay"),
-   facet.by = "Treatment_Level") +
-  stat_compare_means(method = "t.test", label = "p.signif") +
-  labs(
+  palette = pnw_palette("Bay"), #choosing a cool color pallet which I use through this document
+   facet.by = "Treatment_Level") + #faceting to get all of the treatment levels included
+  stat_compare_means(method = "t.test", 
+                     label = "p.signif") + #running a t.test within each treatment level with the significance label up top
+  labs( #adding titles 
     title = "N. lituratus Bites by Treatment Level",
     x = "Experiment Type",
     y = "Total Bites",
     fill = "Experiment Type"
   ) +
   theme_minimal()+
-  theme(
+  theme( #adjusting the text to fit better and look nicer
     axis.title.x = element_text (margin = margin(r=30)),
     axis.title.y = element_text (margin = margin(r=15)),
     strip.text = element_text(face = "bold", size = 12)
@@ -131,19 +132,18 @@ ggboxplot(
   x = "Treatment_Level",   # now treatment is on the x-axis
   y = "Bites",
   fill = "Treatment_Level", # color by treatment
-  palette = pnw_palette("Bay"),
+  palette = pnw_palette("Bay"), #using the same color palette
   facet.by = "Experiment_Type"   # facet by trial type
 ) +
-  stat_compare_means(
-    method = "t.test",
-    label = "p.signif"
+  stat_compare_means(method = "t.test", #doing a t-test again
+                     label = "p.signif"
   ) +
-  labs(
+  labs( #adding labels to everything
     title = "N. lituratus Bites by Treatment Level",
     x = "Treatment Level",
     y = "Total Bites"
   ) +
-  theme_minimal()
+  theme_minimal() #minimal theme
 
 ```
 
@@ -159,22 +159,22 @@ The algae that was given to the fish in the foraging experiments consisted of tw
 #| message: false
 #| label: fig-3
 
-algae_comparisons <- list(c("DB_Bites","CB_Bites"), c("DB_Bites","DE_Bites"), c("DB_Bites","CE_Bites"))
+algae_comparisons <- list(c("DB_Bites","CB_Bites"), c("DB_Bites","DE_Bites"), c("DB_Bites","CE_Bites")) #setting up specific comparisons for the t-test
 
-ggviolin(
-  Algae_Pref,
+ggviolin( #choosing a violin plot for this data
+  Algae_Pref, #using this dataframe
   x = "Algae",
-  y = "algae_type",
+  y = "algae_type", #setting the axes
   fill = "Algae",
-  palette = pnw_palette("Bay"),
-  add = "boxplot") +
-  stat_compare_means(comparisons = algae_comparisons, method = "t.test", label = "p.signif", label.y = 350) +
-  labs(
+  palette = pnw_palette("Bay"), #choosing the palette
+  add = "boxplot") + #adding a boxplot on top of the violin for better visual
+  stat_compare_means(comparisons = algae_comparisons, method = "t.test", label = "p.signif", label.y = 350) + #running a t test using the comparisons I set earlier and moving the bar with the labels higher to be better seen
+  labs( #adding titles
     title = "Algae Preference of N. lituratus",
     x = "Algae Type",
     y = "Preference (Bites)"
   ) +
-  theme_minimal()
+  theme_minimal() #minimal theme to match others
 
 
 ```
@@ -190,32 +190,32 @@ Finally I wanted to make sure that the sizes of the fish weren't the determining
 #| message: false
 #| label: fig-mass
 
-p1 <- ggplot(Total_Bites, aes(x = Total_Length, y = Bites)) +
-  geom_point(aes(color = as.character(Treatment_Level)), size = 3, alpha = 0.7) + #laying down a second point plot to get the colors I want
-  geom_smooth(method = "lm", se = TRUE, color = "black", fill = "lightblue") +  # solid line
-  stat_regline_equation(
+p1 <- ggplot(Total_Bites, aes(x = Total_Length, y = Bites)) + #assigning the plots a name since I'm patching two together, choosing the dataset and axes
+  geom_point(aes(color = as.character(Treatment_Level)), size = 3, alpha = 0.7) + #laying down a second point plot to get the colors I want by treating them as a character so the palette can be assigned
+  geom_smooth(method = "lm", se = TRUE, color = "black", fill = "lightblue") +  # adding one of these to better visualize with a line and some fill
+  stat_regline_equation( #getting the equation of the line
     aes(label = ..eq.label..),
     label.x = 10,   # fixed placement on x-axis
     label.y = 570# fixed placement on y-axis
   ) +
-  stat_cor(
+  stat_cor( #placement of the r2 value 
     aes(label = ..rr.label..),
-    label.x = 14,
-    label.y = 570
+    label.x = 14, # fixed placement on x-axis
+    label.y = 570 # fixed placement on y-axis
   ) +
-  labs(
+  labs( #adding titles to everything
     title = "Fish Size vs Total Bites",
     subtitle = "Solid regression line with equation and R²",
     x = "Fish Total Length (cm)",
     y = "Algae Mass Eaten (g)",
     color = "Treatment Level"
   ) +
-  scale_color_manual(
+  scale_color_manual( #manually adding colors to the overlayed plot I added earlier
     values = c("6" = pnw_palette("Bay")[1],
                "9" = pnw_palette("Bay")[5],
                "12" = pnw_palette("Bay")[3])) +
-  theme_minimal(base_size = 14) +
-  theme(
+  theme_minimal(base_size = 14) + # adding a theme
+  theme( #changing the text to fit better on the graph
     plot.title = element_text(face = "bold", size = 16),
     plot.subtitle = element_text(size = 12, color = "gray"),
     axis.title = element_text(face = "bold"),
@@ -223,13 +223,13 @@ p1 <- ggplot(Total_Bites, aes(x = Total_Length, y = Bites)) +
     panel.grid.minor = element_blank()
   )
 
-p2 <- ggplot(Mass_eaten, aes(x = Total_Length, y = Total_Mass)) +
+p2 <- ggplot(Mass_eaten, aes(x = Total_Length, y = Total_Mass)) + #this plot is EXACTLY the same as the above plot but is using mass eaten instead of total bites
   geom_point(aes(color = as.character(Treatment_Level)), size = 3, alpha = 0.7) +
-  geom_smooth(method = "lm", se = TRUE, color = "black", fill = "lightblue") +  # solid line
+  geom_smooth(method = "lm", se = TRUE, color = "black", fill = "lightblue") +
   stat_regline_equation(
     aes(label = ..eq.label..),
-    label.x = 10,   # fixed placement on x-axis
-    label.y = 4 # fixed placement on y-axis
+    label.x = 10, 
+    label.y = 4 
   ) +
   stat_cor(
     aes(label = ..rr.label..),
@@ -256,8 +256,8 @@ p2 <- ggplot(Mass_eaten, aes(x = Total_Length, y = Total_Mass)) +
     panel.grid.minor = element_blank()
   )
 
-p1/p2 +
-  plot_layout(guides = 'collect')
+p1/p2 + #putting the two plots together
+  plot_layout(guides = 'collect') #having just one legend
 ```
 
 Having a very small R2 value in @fig-mass is good for my experimental set up as the number of bites and the mass of algae eaten is not dependent on the size of the fish. There also is good distribution of sizes across the different treatments. 
