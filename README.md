@@ -8,7 +8,7 @@ This project uses data collected by myself at the Johansen Fish Resilience Lab l
 
 ## Data
 
-All data is complied into one csv file named N_lituratus_forage.csv and be found within the [data folder](data/N_lituratus_forage.csv).
+All data is complied into one csv file named N_lituratus_forage.csv and be found within the [data folder](Data/N_lituratus_forage.csv).
 
 Here is a table desceribing the data collected and used for my outputs within my document:
 
